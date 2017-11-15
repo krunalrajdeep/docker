@@ -1,0 +1,27 @@
+FROM centos/httpd
+MAINTAINER The CentOS Project <cloud-ops@centos.org>
+LABEL Vendor="CentOS" \
+      License=GPLv2 \
+      Version=2.4.6-40
+
+RUN yum -y --setopt=tsflags=nodocs install epel-release
+RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+
+RUN yum -y install php70w wget vim  unzip curl 
+RUN yum -y install php70w-devel php70w-embedded php70w-dba php70w-enchant php70w-fpm php70w-gd php70w-imap php70w-interbase php70w-mcrypt php70w-mbstring php70w-mysql php70w-odbc php70w-opcache php70w-pdo php70w-pdo_dblib php70w-pear php70w-pspell php70w-xml php70w-tidy php70w-xmlrpc
+RUN yum -y install ImageMagick ImageMagick-devel ImageMagick-perl gcc make curl
+RUN pecl install Imagick
+RUN wget http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+RUN tar xfz ioncube_loaders_lin_x86-64.tar.gz
+RUN cp ioncube/ioncube_loader_lin_7.0.so /usr/lib64/php/modules
+RUN cp -p /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd_orig.conf
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/httpd/conf/httpd.conf
+RUN cp -p /etc/php.ini /etc/php.ini_orig;
+ADD conf/vphp.ini /etc/php.d/
+
+EXPOSE 80 443
+
+ADD run-httpd.sh /run-httpd.sh
+RUN chmod -v +x /run-httpd.sh
+
+CMD ["/run-httpd.sh"]
